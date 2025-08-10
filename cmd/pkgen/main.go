@@ -10,7 +10,7 @@ import (
 
 	"github.com/ifnotnil/pkgen"
 	"github.com/ifnotnil/pkgen/templates"
-	"sigs.k8s.io/yaml"
+	"go.yaml.in/yaml/v4"
 )
 
 func main() {

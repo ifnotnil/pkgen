@@ -34,7 +34,7 @@ func TestGenerate(t *testing.T) {
 	require.NoError(t, err)
 
 	// read and evaluate the generated file
-	got, gotErr := os.ReadFile(filepath.Join(tmpDir, "zz_generated.abc.go"))
+	got, gotErr := os.ReadFile(filepath.Join(filepath.Clean(tmpDir), "zz_generated.abc.go"))
 	require.NoError(t, gotErr)
 	require.Equal(t, expectedGenerated, string(got))
 }

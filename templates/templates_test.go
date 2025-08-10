@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+	"go.yaml.in/yaml/v4"
 	"golang.org/x/tools/go/packages"
 )
 
@@ -34,3 +35,33 @@ package abc123
 
 const PackagePath = "github.com/abc/a1/abc123"
 `
+
+func TestYAMLUnmarshal(t *testing.T) {
+	tests := map[string]struct {
+		input    string
+		expected TemplateConfigs
+	}{
+		"string": {
+			input:    `"a single string"`,
+			expected: TemplateConfigs{TemplateConfig{Name: "a single string"}},
+		},
+		"string array": {
+			input:    `[ "abc", "def" ]`,
+			expected: TemplateConfigs{TemplateConfig{Name: "abc"}, TemplateConfig{Name: "def"}},
+		},
+		"object array": {
+			input: `- name: "abc"
+- template_file: "/abc/def"`,
+			expected: TemplateConfigs{TemplateConfig{Name: "abc"}, TemplateConfig{CustomTemplateFile: "/abc/def"}},
+		},
+	}
+
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			got := TemplateConfigs{}
+			err := yaml.Unmarshal([]byte(tc.input), &got)
+			require.NoError(t, err)
+			require.Equal(t, tc.expected, got)
+		})
+	}
+}

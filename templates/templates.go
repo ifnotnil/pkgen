@@ -10,7 +10,7 @@ import (
 
 	"github.com/moukoublen/pick"
 	"github.com/moukoublen/pick/iter"
-	"sigs.k8s.io/yaml"
+	"go.yaml.in/yaml/v4"
 )
 
 //go:embed *.tmpl
@@ -72,46 +72,43 @@ type TemplateConfig struct {
 
 type TemplateConfigs []TemplateConfig
 
-func (tc *TemplateConfigs) UnmarshalYAML(value []byte) error {
+func (tc *TemplateConfigs) UnmarshalYAML(value *yaml.Node) error {
 	var raw any
-	if err := yaml.Unmarshal(value, &raw); err != nil {
+	if err := value.Decode(&raw); err != nil {
 		return err
 	}
 
 	// can be a single string
-	if i, _ := iter.Len(raw); i > 0 {
-		p := pick.Wrap(raw).Relaxed()
-		*tc = pick.RelaxedMap(p, "", func(rp pick.RelaxedAPI) (TemplateConfig, error) {
-			// can be a string
-			s := rp.String("")
-			if s != "" {
-				return TemplateConfig{Name: s}, nil
-			}
-
-			// or an object
-			tc := TemplateConfig{
-				Name:               rp.String("name"),
-				CustomTemplateFile: rp.String("template_file"),
-			}
-
-			if tc.Name == "" && tc.CustomTemplateFile == "" {
-				return tc, ErrMalformedTemplateConfigs
-			}
-
-			return tc, nil
-		})
-
-		if len(*tc) != i {
-			return ErrMalformedTemplateConfigs
-		}
+	if str, is := raw.(string); is {
+		(*tc) = []TemplateConfig{{Name: str}}
+		return nil
 	}
 
-	s, err := pick.Convert[string](raw)
-	if err != nil {
+	p := pick.Wrap(raw).Relaxed()
+	*tc = pick.RelaxedMap(p, "", func(rp pick.RelaxedAPI) (TemplateConfig, error) {
+		// can be a string
+		s := rp.String("")
+		if s != "" {
+			return TemplateConfig{Name: s}, nil
+		}
+
+		// or an object
+		tc := TemplateConfig{
+			Name:               rp.String("name"),
+			CustomTemplateFile: rp.String("template_file"),
+		}
+
+		if tc.Name == "" && tc.CustomTemplateFile == "" {
+			return tc, ErrMalformedTemplateConfigs
+		}
+
+		return tc, nil
+	})
+
+	ln, _ := iter.Len(raw)
+	if len(*tc) != ln {
 		return ErrMalformedTemplateConfigs
 	}
-
-	(*tc) = []TemplateConfig{{Name: s}}
 
 	return nil
 }
