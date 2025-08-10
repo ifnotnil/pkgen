@@ -48,7 +48,7 @@ func main() {
 		cnf.PackagesQuery.Patterns = []string{"."}
 		logger.DebugContext(ctx, "running inside a go:generate")
 	} else {
-		err := parseConfig(ctx, config, &cnf)
+		err := parseConfig(config, &cnf)
 		if err != nil {
 			logger.ErrorContext(ctx, "error while parsing config", slog.String("error", err.Error()))
 			os.Exit(1)
@@ -99,7 +99,7 @@ func runningInsideGoGenerate() bool {
 	return exists
 }
 
-func parseConfig(ctx context.Context, filePath string, cnf *pkgen.Config) error {
+func parseConfig(filePath string, cnf *pkgen.Config) error {
 	filePath = filepath.Clean(filePath)
 
 	_, err := os.Stat(filePath)
