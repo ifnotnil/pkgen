@@ -9,8 +9,8 @@
   "go.disableConcurrentTests": true,
   //"go.testTags": "test-e2e",
   "go.testFlags": [
-    // "-count=1",
-    // "-parallel=1",
+    "-count=1",
+    "-parallel=1",
     // "-v",
     "-race"
   ],
