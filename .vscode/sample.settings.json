@@ -1,0 +1,26 @@
+{
+  "cSpell.language": "en,el",
+  "go.formatTool": "default",
+  "go.lintTool": "golangci-lint",
+  "go.lintFlags": [
+    "--fast"
+  ],
+  "go.lintOnSave": "package",
+  "go.disableConcurrentTests": true,
+  //"go.testTags": "test-e2e",
+  "go.testFlags": [
+    // "-count=1",
+    // "-parallel=1",
+    // "-v",
+    "-race"
+  ],
+  "go.testEnvVars": { },
+  "go.testTimeout": "60s",
+  // ~~Language Server~~ https://github.com/golang/tools/blob/master/gopls/doc/settings.md
+  "go.useLanguageServer": true,
+  "gopls": {
+    "build.buildFlags": [ ],
+    "build.env": { },
+    "ui.semanticTokens": true
+  },
+}
