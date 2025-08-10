@@ -60,7 +60,9 @@ func ParseConfig(ctx context.Context, configPath string) (*Config, error) {
 		slog.Default().DebugContext(ctx, "running inside a go:generate")
 	} else {
 		err := ParseYAMLConfig(configPath, &cnf)
-		return nil, err
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return &cnf, nil
