@@ -27,8 +27,8 @@ func main() {
 		verbose        bool
 	)
 
-	flag.StringVar(&configPath, "config", ".pkgen.yml", "configuration file to use")
-	flag.StringVar(&configPath, "c", ".pkgen.yml", "configuration file to use")
+	flag.StringVar(&configPath, "config", "", "configuration file to use")
+	flag.StringVar(&configPath, "c", "", "configuration file to use")
 	flag.StringVar(&template, "template", "", "template to generate")
 	flag.StringVar(&templateCustom, "template-custom", "", "template to generate")
 	flag.BoolVar(&verbose, "verbose", false, "verbose output")

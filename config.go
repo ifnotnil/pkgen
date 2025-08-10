@@ -2,6 +2,7 @@ package pkgen
 
 import (
 	"context"
+	"errors"
 	"log/slog"
 	"os"
 	"path/filepath"
@@ -58,11 +59,23 @@ func ParseConfig(ctx context.Context, configPath string) (*Config, error) {
 		// if it is running inside go:generate query only the local package.
 		cnf.PackagesQuery.Patterns = []string{"."}
 		slog.Default().DebugContext(ctx, "running inside a go:generate")
-	} else {
-		err := ParseYAMLConfig(configPath, &cnf)
+		return &cnf, nil
+	}
+
+	if configPath == "" {
+		err := ParseYAMLConfig(DefaultConfigFile, &cnf)
 		if err != nil {
+			// attempts to read the default but does not fail if the file does not exist.
+			if errors.Is(err, os.ErrNotExist) {
+				return &cnf, nil
+			}
 			return nil, err
 		}
+	}
+
+	err := ParseYAMLConfig(configPath, &cnf)
+	if err != nil {
+		return nil, err
 	}
 
 	return &cnf, nil
@@ -73,3 +86,5 @@ func runningInsideGoGenerate() bool {
 
 	return exists
 }
+
+const DefaultConfigFile = ".pkgen.yml"
