@@ -33,6 +33,7 @@ func main() {
 	if runningInsideGoGenerate() {
 		// if it is running inside go:generate query only the local package.
 		cnf.PackagesQuery.Patterns = []string{"."}
+		fmt.Printf("RUNNING INSIRE GO:GENERATE\n\n\n")
 	} else {
 		err := parseConfig(config, &cnf)
 		if err != nil {
