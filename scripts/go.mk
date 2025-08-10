@@ -9,7 +9,7 @@ export GO111MODULE := on
 #GOPATH := $(shell go env GOPATH)
 GO_VER := $(shell go env GOVERSION)
 
-BUILD_FLAGS := -a -ldflags '-s -w $(X_FLAGS)' -tags '$(TAGS)'
+BUILD_FLAGS := -ldflags '-s -w $(X_FLAGS)' -tags '$(TAGS)'
 BUILD_FLAGS_DEBUG := -ldflags '$(X_FLAGS)' -tags '$(TAGS)'
 BUILD_OUTPUT ?= $(CURDIR)/output
 

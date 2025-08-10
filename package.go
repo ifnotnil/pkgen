@@ -12,13 +12,13 @@ type PackagesQueryConfig struct {
 	Env          []string `yaml:"env"`
 	BuildFlags   []string `yaml:"build_flags"`
 
-	Dir     string `yaml:"build_flags"`
-	Pattern string `yaml:"build_flags"` // e.g. "./..."
+	Dir      string   `yaml:"dir"`
+	Patterns []string `yaml:"patterns"` // e.g. "./..."
 }
 
 func Packages(ctx context.Context, q PackagesQueryConfig) ([]*packages.Package, error) {
-	if q.Pattern == "" {
-		q.Pattern = "./..."
+	if len(q.Patterns) == 0 {
+		q.Patterns = []string{"./..."}
 	}
 
 	cfg := &packages.Config{
@@ -30,5 +30,5 @@ func Packages(ctx context.Context, q PackagesQueryConfig) ([]*packages.Package, 
 		BuildFlags: q.BuildFlags,
 	}
 
-	return packages.Load(cfg, q.Pattern)
+	return packages.Load(cfg, q.Patterns...)
 }
