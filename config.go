@@ -20,7 +20,7 @@ var DefaultConfig = Config{
 	Templates: templates.TemplateConfigs{},
 
 	Generate: GenerateConfig{
-		OutputFile:    defaultNameFMT,
+		OutputFile:    "",
 		OutputFileMod: 0o644,
 	},
 }
