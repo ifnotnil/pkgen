@@ -1,5 +1,10 @@
 # pkgen
 
+## Install
+```shell
+go install github.com/ifnotnil/pkgen/cmd/pkgen@latest
+```
+
 ### Running Modes
 
 #### In `//go:generate`
