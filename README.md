@@ -1,4 +1,5 @@
 # pkgen
+Generate a file inside each package. Using pre-made templates or custom ones.
 
 ## Install
 ```shell
@@ -25,7 +26,7 @@ Running the `pkgen` in the project level will result running for all the package
 pkgen --template pkgpath
 ```
 
-Or with custom template
+Or with a custom template
 
 ```shell
 pkgen --template-custom /path/to/template.tmpl
