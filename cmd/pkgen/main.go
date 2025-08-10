@@ -6,11 +6,9 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
-	"path/filepath"
 
 	"github.com/ifnotnil/pkgen"
 	"github.com/ifnotnil/pkgen/templates"
-	"go.yaml.in/yaml/v4"
 )
 
 func main() {
@@ -22,14 +20,14 @@ func main() {
 	slog.SetDefault(logger)
 
 	var (
-		config         string
+		configPath     string
 		template       string
 		templateCustom string
 		verbose        bool
 	)
 
-	flag.StringVar(&config, "config", ".pkgen.yml", "configuration file to use")
-	flag.StringVar(&config, "c", ".pkgen.yml", "configuration file to use")
+	flag.StringVar(&configPath, "config", ".pkgen.yml", "configuration file to use")
+	flag.StringVar(&configPath, "c", ".pkgen.yml", "configuration file to use")
 	flag.StringVar(&template, "template", "", "template to generate")
 	flag.StringVar(&templateCustom, "template-custom", "", "template to generate")
 	flag.BoolVar(&verbose, "verbose", false, "verbose output")
@@ -39,23 +37,15 @@ func main() {
 		loggerLevel.Set(slog.LevelDebug)
 	}
 
-	logger.DebugContext(ctx, "cli arguments", slog.String("config", config), slog.String("template", template), slog.String("template-custom", templateCustom))
+	logger.DebugContext(ctx, "cli arguments", slog.String("config", configPath), slog.String("template", template), slog.String("template-custom", templateCustom))
 
-	cnf := pkgen.DefaultConfig
-
-	if runningInsideGoGenerate() {
-		// if it is running inside go:generate query only the local package.
-		cnf.PackagesQuery.Patterns = []string{"."}
-		logger.DebugContext(ctx, "running inside a go:generate")
-	} else {
-		err := parseConfig(config, &cnf)
-		if err != nil {
-			logger.ErrorContext(ctx, "error while parsing config", slog.String("error", err.Error()))
-			os.Exit(1)
-		}
+	cnf, err := pkgen.ParseConfig(ctx, configPath)
+	if err != nil {
+		logger.ErrorContext(ctx, "error while parsing config", slog.String("error", err.Error()))
+		os.Exit(1)
 	}
 
-	// cli arg overwrites config's one
+	// cli arguments overwrite config's one
 	if template != "" {
 		cnf.Templates = []templates.TemplateConfig{{Name: template}}
 	}
@@ -91,28 +81,4 @@ func main() {
 			}
 		}
 	}
-}
-
-func runningInsideGoGenerate() bool {
-	_, exists := os.LookupEnv("GOFILE")
-
-	return exists
-}
-
-func parseConfig(filePath string, cnf *pkgen.Config) error {
-	filePath = filepath.Clean(filePath)
-
-	_, err := os.Stat(filePath)
-	if err != nil {
-		return err
-	}
-
-	if b, err := os.ReadFile(filePath); err == nil {
-		err = yaml.Unmarshal(b, &cnf)
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
 }
