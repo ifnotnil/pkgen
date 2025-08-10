@@ -9,6 +9,7 @@ import (
 
 	"github.com/ifnotnil/pkgen"
 	"github.com/ifnotnil/pkgen/templates"
+	"golang.org/x/tools/go/packages"
 )
 
 func main() {
@@ -60,15 +61,13 @@ func main() {
 		logger.ErrorContext(ctx, "error while querying packages", slog.String("error", err.Error()))
 		os.Exit(1)
 	}
-
-	logger.DebugContext(ctx, "packages", slog.Any("packages", packages))
+	debugLogPackages(ctx, packages)
 
 	tmps, err := templates.GetTemplates(cnf.Templates)
 	if err != nil {
 		logger.ErrorContext(ctx, "error while getting templates", slog.String("error", err.Error()))
 		os.Exit(1)
 	}
-	logger.DebugContext(ctx, "packages", slog.Any("packages", packages))
 
 	logger.DebugContext(ctx, "generating", slog.Int("packages", len(packages)), slog.Int("templates", len(tmps)))
 	for _, p := range packages {
@@ -80,5 +79,16 @@ func main() {
 				os.Exit(1)
 			}
 		}
+	}
+}
+
+func debugLogPackages(ctx context.Context, packages []*packages.Package) {
+	logger := slog.Default()
+	if !logger.Enabled(ctx, slog.LevelDebug) {
+		return
+	}
+
+	for _, p := range packages {
+		logger.DebugContext(ctx, "queried package", slog.String("package", fmt.Sprintf("%#v", p)))
 	}
 }
