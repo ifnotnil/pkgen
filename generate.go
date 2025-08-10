@@ -38,7 +38,6 @@ func GenerateInPackage(ctx context.Context, pkg *packages.Package, tmp *template
 		return err
 	}
 
-	dir := filepath.Dir(pkg.GoFiles[0])
-	outPath := filepath.Join(dir, cnf.OutputFile)
+	outPath := filepath.Join(filepath.Clean(pkg.Dir), cnf.OutputFile)
 	return os.WriteFile(outPath, buf.Bytes(), cnf.OutputFileMod)
 }

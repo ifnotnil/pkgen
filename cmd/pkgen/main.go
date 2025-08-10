@@ -72,7 +72,7 @@ func main() {
 	logger.DebugContext(ctx, "generating", slog.Int("packages", len(packages)), slog.Int("templates", len(tmps)))
 	for _, p := range packages {
 		for _, tmp := range tmps {
-			logger.DebugContext(ctx, "generating", slog.String("package", p.Name), slog.String("template", tmp.Name()))
+			logger.DebugContext(ctx, "generating", slog.String("package", p.Name), slog.String("dir", p.Dir), slog.String("template", tmp.Name()))
 			err = pkgen.GenerateInPackage(ctx, p, tmp, pkgen.GenerateConfig{})
 			if err != nil {
 				fmt.Printf("error while generating: %s", err.Error())
