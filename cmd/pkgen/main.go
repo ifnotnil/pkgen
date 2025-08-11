@@ -75,7 +75,7 @@ func main() {
 			logger.DebugContext(ctx, "generating", slog.String("package", p.Name), slog.String("dir", p.Dir), slog.String("template", tmp.Name()))
 			err = pkgen.GenerateInPackage(ctx, p, tmp, cnf.Generate)
 			if err != nil {
-				fmt.Printf("error while generating: %s", err.Error())
+				logger.ErrorContext(ctx, "error while rendering file", slog.String("package", p.Name), slog.String("dir", p.Dir), slog.String("template", tmp.Name()))
 				os.Exit(1)
 			}
 		}
