@@ -11,7 +11,7 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
-const PackagePath = "{{ .PkgPath }}"
+const packagePath = "{{ .PkgPath }}"
 
 var (
 	trc      trace.Tracer
@@ -22,9 +22,9 @@ var (
 
 func otelInit() {
 	otelOnce.Do(func() {
-		trc = otel.Tracer(PackagePath)
-		mtr = otel.Meter(PackagePath)
-		lgr = global.Logger(PackagePath)
+		trc = otel.Tracer(packagePath)
+		mtr = otel.Meter(packagePath)
+		lgr = global.Logger(packagePath)
 	})
 }
 
