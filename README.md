@@ -17,7 +17,7 @@ go install github.com/ifnotnil/pkgen/cmd/pkgen@latest
 Inside a `//go:generate` comment line this:
 
 ```golang
-//go:generate pkgen --template pkgpath
+//go:generate pkgen --template '<template>'
 ```
 
 This will result running only for the current package
@@ -28,7 +28,7 @@ This will result running only for the current package
 Running the `pkgen` in the project level will result running for all the packages recursively.
 
 ```shell
-pkgen --template pkgpath
+pkgen --template '<template>'
 ```
 
 Or with a custom template
@@ -37,7 +37,17 @@ Or with a custom template
 pkgen --template-custom /path/to/template.tmpl
 ```
 
-## Custom Templates
+## Templates
 
-Each template runs with the struct returned from [`golang.org/x/tools/go/packages`](https://github.com/golang/tools/blob/8866876b956fadd4905eb7f49d5d5301d0bc7644/go/packages/packages.go#L419)
+### Built-in Templates
+
+| Template    | File                                       | Description |
+|-------------|--------------------------------------------|-------------|
+| `pkgpath`   | [pkgpath.tmpl](templates/pkgpath.tmpl)     | Simple template that generates the full package path as a string constant |
+| `oteltrace` | [oteltrace.tmpl](templates/oteltrace.tmpl) | Basic OpenTelemetry tracing setup with tracer only. It creates a package level tracer, using the full package path as name. |
+| `otel`      | [otel.tmpl](templates/otel.tmpl)           | Full OpenTelemetry setup with tracer, meter, and logger for observability. It creates a package level tracer, meter and logger, using the full package path as name. |
+
+### Custom Templates
+
+Each template is rendered provided the struct returned from [`golang.org/x/tools/go/packages`](https://github.com/golang/tools/blob/8866876b956fadd4905eb7f49d5d5301d0bc7644/go/packages/packages.go#L419)
 
