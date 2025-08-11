@@ -2,8 +2,6 @@
 package {{ .Name }}
 
 import (
-	"sync"
-
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/log"
 	"go.opentelemetry.io/otel/log/global"
@@ -14,31 +12,7 @@ import (
 const packagePath = "{{ .PkgPath }}"
 
 var (
-	trc      trace.Tracer
-	mtr      metric.Meter
-	lgr      log.Logger
-	otelOnce sync.Once
+	tracer trace.Tracer = otel.Tracer(packagePath)
+	meter  metric.Meter = otel.Meter(packagePath)
+	logger log.Logger   = global.Logger(packagePath)
 )
-
-func otelInit() {
-	otelOnce.Do(func() {
-		trc = otel.Tracer(packagePath)
-		mtr = otel.Meter(packagePath)
-		lgr = global.Logger(packagePath)
-	})
-}
-
-func packageTracer() trace.Tracer {
-	otelInit()
-	return trc
-}
-
-func packageMeter() metric.Meter {
-	otelInit()
-	return mtr
-}
-
-func packageLogger() log.Logger {
-	otelInit()
-	return lgr
-}

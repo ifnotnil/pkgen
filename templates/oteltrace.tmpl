@@ -2,22 +2,10 @@
 package {{ .Name }}
 
 import (
-	"sync"
-
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/trace"
 )
 
 const packagePath = "{{ .PkgPath }}"
 
-var (
-	trc      trace.Tracer
-	otelOnce sync.Once
-)
-
-func packageTracer() trace.Tracer {
-	otelOnce.Do(func() {
-		trc = otel.Tracer(packagePath)
-	})
-	return trc
-}
+var tracer = otel.Tracer(packagePath)
