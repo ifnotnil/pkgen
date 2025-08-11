@@ -34,9 +34,9 @@ jobs:
           .tools/
           ~/.cache/go-build
           ~/go/pkg
-        key: ci-tools-${{ runner.os }}-${{ runner.arch }}-${{ matrix.go-version }}-${{ hashFiles('**/go.mod', '**/go.sum', '**/Makefile', 'scripts/tools.mk', '.github/workflows/ci.yml', 'tools/tools.go') }}
+        key: ci-tools-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('**/go.mod', '**/go.sum', '**/Makefile', '.github/workflows/ci.yml', 'tools/tools.mk', 'tools/tools.go') }}
         restore-keys: |
-          ci-tools-${{ runner.os }}-${{ runner.arch }}-${{ matrix.go-version }}
+          ci-tools-${{ runner.os }}-${{ runner.arch }}-
 
     - name: install tools
       # if: steps.cache-tools.outputs.cache-hit != 'true'
@@ -65,4 +65,3 @@ jobs:
       uses: codecov/codecov-action@v5
       env:
         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-      if: matrix.go-version == '1.24'

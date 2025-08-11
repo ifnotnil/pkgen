@@ -1,4 +1,9 @@
 # pkgen
+[![CI Status](https://github.com/ifnotnil/pkgen/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/ifnotnil/pkgen/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/ifnotnil/pkgen/graph/badge.svg?token=c0O5dL2fpQ)](https://codecov.io/gh/ifnotnil/pkgen)
+[![Go Report Card](https://goreportcard.com/badge/github.com/ifnotnil/pkgen)](https://goreportcard.com/report/github.com/ifnotnil/pkgen)
+[![PkgGoDev](https://pkg.go.dev/badge/github.com/ifnotnil/pkgen)](https://pkg.go.dev/github.com/ifnotnil/pkgen)
+
 Generate a file inside each package. Using pre-made templates or custom ones.
 
 ## Install
@@ -32,7 +37,7 @@ Or with a custom template
 pkgen --template-custom /path/to/template.tmpl
 ```
 
-## Custom Templates 
+## Custom Templates
 
 Each template runs with the struct returned from [`golang.org/x/tools/go/packages`](https://github.com/golang/tools/blob/8866876b956fadd4905eb7f49d5d5301d0bc7644/go/packages/packages.go#L419)
 
