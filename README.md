@@ -11,9 +11,9 @@ Generate a file inside each package. Using pre-made templates or custom ones.
 go install github.com/ifnotnil/pkgen/cmd/pkgen@latest
 ```
 
-### Running Modes
+## Running Modes
 
-#### In `//go:generate`
+### In `//go:generate`
 Inside a `//go:generate` comment line this:
 
 ```golang
@@ -24,7 +24,7 @@ This will result running only for the current package
 
 
 
-#### Project level
+### Project level
 Running the `pkgen` in the project level will result running for all the packages recursively.
 
 ```shell
@@ -51,3 +51,22 @@ pkgen --template-custom /path/to/template.tmpl
 
 Each template is rendered provided the struct returned from [`golang.org/x/tools/go/packages`](https://github.com/golang/tools/blob/8866876b956fadd4905eb7f49d5d5301d0bc7644/go/packages/packages.go#L419)
 
+
+## Config
+
+Optionally you can define a config `yaml` file. By default `pkgen` will try to read the file `.pkgen.yml` in the working directory, if exists.
+
+Additionally you can specify a config file for the `pkgen` to read using the `--config <path to yaml>` argument.
+
+Example of config file:
+
+```yaml
+templates:      # One or more templates can be selected. Pre-configured or custom templates can be selected.
+  - otel
+  - template_file: path/to/template.tmpl
+packages_query:
+  patterns:                    # package patterns that `go list` accepts. Default value is `./...`
+    - './internal/app'         # single package
+    - './internal/domain/...'  # recursive
+    - './pkg/eventbus'
+```

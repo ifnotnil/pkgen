@@ -6,19 +6,38 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
+	"time"
 
 	"github.com/ifnotnil/pkgen"
 	"github.com/ifnotnil/pkgen/templates"
+	"github.com/lmittmann/tint"
+	"golang.org/x/term"
 	"golang.org/x/tools/go/packages"
 )
+
+func slogHandler(loggerLevel *slog.LevelVar) slog.Handler {
+	if term.IsTerminal(int(os.Stdout.Fd())) {
+		return tint.NewHandler(os.Stdout, &tint.Options{
+			AddSource:  false,
+			TimeFormat: time.Kitchen,
+			Level:      loggerLevel,
+		})
+	}
+
+	return slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+		AddSource: false,
+		Level:     loggerLevel,
+	})
+}
 
 func main() {
 	ctx := context.Background()
 
 	loggerLevel := &slog.LevelVar{}
 	loggerLevel.Set(slog.LevelInfo)
-	logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{AddSource: false, Level: loggerLevel}))
-	slog.SetDefault(logger)
+
+	slog.SetDefault(slog.New(slogHandler(loggerLevel)))
+	logger := slog.Default()
 
 	var (
 		configPath     string
@@ -42,7 +61,7 @@ func main() {
 
 	cnf, err := pkgen.ParseConfig(ctx, configPath)
 	if err != nil {
-		logger.ErrorContext(ctx, "error while parsing config", slog.String("error", err.Error()))
+		logger.ErrorContext(ctx, "error while parsing config", errAttr(err))
 		os.Exit(1)
 	}
 
@@ -58,14 +77,14 @@ func main() {
 
 	packages, err := pkgen.Packages(ctx, cnf.PackagesQuery)
 	if err != nil {
-		logger.ErrorContext(ctx, "error while querying packages", slog.String("error", err.Error()))
+		logger.ErrorContext(ctx, "error while querying packages", errAttr(err))
 		os.Exit(1)
 	}
 	debugLogPackages(ctx, packages)
 
 	tmps, err := templates.GetTemplates(cnf.Templates)
 	if err != nil {
-		logger.ErrorContext(ctx, "error while getting templates", slog.String("error", err.Error()))
+		logger.ErrorContext(ctx, "error while getting templates", errAttr(err))
 		os.Exit(1)
 	}
 
@@ -91,4 +110,8 @@ func debugLogPackages(ctx context.Context, packages []*packages.Package) {
 	for _, p := range packages {
 		logger.DebugContext(ctx, "queried package", slog.String("package", fmt.Sprintf("%#v", p)))
 	}
+}
+
+func errAttr(err error) slog.Attr {
+	return slog.String("err", err.Error())
 }
