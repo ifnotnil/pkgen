@@ -3,6 +3,7 @@ dir: '{{.InterfaceDir}}'
 filename: mocks_test.go
 force-file-write: true
 formatter: goimports
+include-auto-generated: false
 log-level: info
 structname: '{{.Mock}}{{.InterfaceName}}'
 pkgname: '{{.SrcPackageName}}'
@@ -11,7 +12,7 @@ require-template-schema-exists: true
 template: testify
 template-schema: '{{.Template}}.schema.json'
 packages:
-  github.com/ifnotnil/daemon:
+  github.com/ifnotnil/pkgen:
     config:
       all: true
       recursive: true
