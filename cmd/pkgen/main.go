@@ -88,16 +88,9 @@ func main() {
 		os.Exit(1)
 	}
 
-	logger.DebugContext(ctx, "generating", slog.Int("packages", len(packages)), slog.Int("templates", len(tmps)))
-	for _, p := range packages {
-		for _, tmp := range tmps {
-			logger.DebugContext(ctx, "generating", slog.String("package", p.Name), slog.String("dir", p.Dir), slog.String("template", tmp.Name()))
-			err = pkgen.GenerateInPackage(ctx, p, tmp, cnf.Generate)
-			if err != nil {
-				logger.ErrorContext(ctx, "error while rendering file", slog.String("package", p.Name), slog.String("dir", p.Dir), slog.String("template", tmp.Name()))
-				os.Exit(1)
-			}
-		}
+	err = pkgen.Generate(ctx, logger, packages, tmps, cnf.Generate)
+	if err != nil {
+		os.Exit(1)
 	}
 }
 

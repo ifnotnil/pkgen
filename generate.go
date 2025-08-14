@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"text/template"
@@ -40,4 +41,20 @@ func GenerateInPackage(ctx context.Context, pkg *packages.Package, tmp *template
 
 	outPath := filepath.Join(filepath.Clean(pkg.Dir), cnf.OutputFile)
 	return os.WriteFile(outPath, buf.Bytes(), cnf.OutputFileMod)
+}
+
+func Generate(ctx context.Context, logger *slog.Logger, pkgs []*packages.Package, tmps []*template.Template, cnf GenerateConfig) error {
+	logger.DebugContext(ctx, "generating", slog.Int("packages", len(pkgs)), slog.Int("templates", len(tmps)))
+
+	for _, p := range pkgs {
+		for _, tmp := range tmps {
+			logger.DebugContext(ctx, "generating", slog.String("package", p.Name), slog.String("dir", p.Dir), slog.String("template", tmp.Name()))
+			if err := GenerateInPackage(ctx, p, tmp, cnf); err != nil {
+				logger.ErrorContext(ctx, "error while rendering file", slog.String("package", p.Name), slog.String("dir", p.Dir), slog.String("template", tmp.Name()))
+				return err
+			}
+		}
+	}
+
+	return nil
 }
