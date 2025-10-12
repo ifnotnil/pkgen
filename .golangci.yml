@@ -24,8 +24,8 @@ linters:
     - cyclop
     - depguard
     - dupl
-    - exhaustive
-    - exhaustruct
+    #- exhaustive
+    #- exhaustruct
     - funlen
     - gochecknoglobals
     - gocognit
@@ -76,6 +76,15 @@ linters:
           xml: camel
           yaml: camel
         use-field-name: true
+
+    exhaustruct:
+      exclude:
+        - golang.org/x/tools/go/packages.Package
+        - golang.org/x/tools/go/packages.Config
+        - golang.org/x/tools/go/packages.Module
+      allow-empty: true
+      allow-empty-returns: true
+      allow-empty-declarations: true
 
   exclusions:
     generated: lax

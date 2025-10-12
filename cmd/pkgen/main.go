@@ -2,31 +2,30 @@ package main
 
 import (
 	"context"
-	"flag"
-	"fmt"
 	"log/slog"
 	"os"
 	"time"
 
 	"github.com/ifnotnil/pkgen"
-	"github.com/ifnotnil/pkgen/templates"
 	"github.com/lmittmann/tint"
 	"golang.org/x/term"
-	"golang.org/x/tools/go/packages"
 )
 
 func slogHandler(loggerLevel *slog.LevelVar) slog.Handler {
 	if term.IsTerminal(int(os.Stdout.Fd())) {
 		return tint.NewHandler(os.Stdout, &tint.Options{
-			AddSource:  false,
-			TimeFormat: time.Kitchen,
-			Level:      loggerLevel,
+			AddSource:   false,
+			Level:       loggerLevel,
+			ReplaceAttr: nil,
+			TimeFormat:  time.Kitchen,
+			NoColor:     false,
 		})
 	}
 
 	return slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
-		AddSource: false,
-		Level:     loggerLevel,
+		AddSource:   false,
+		Level:       loggerLevel,
+		ReplaceAttr: nil,
 	})
 }
 
@@ -35,76 +34,25 @@ func main() {
 
 	loggerLevel := &slog.LevelVar{}
 	loggerLevel.Set(slog.LevelInfo)
-
 	slog.SetDefault(slog.New(slogHandler(loggerLevel)))
 	logger := slog.Default()
 
-	var (
-		configPath     string
-		template       string
-		templateCustom string
-		verbose        bool
-	)
-
-	flag.StringVar(&configPath, "config", "", "configuration file to use")
-	flag.StringVar(&configPath, "c", "", "configuration file to use")
-	flag.StringVar(&template, "template", "", "template to generate")
-	flag.StringVar(&templateCustom, "template-custom", "", "template to generate")
-	flag.BoolVar(&verbose, "verbose", false, "verbose output")
-	flag.Parse()
-
-	if verbose {
-		loggerLevel.Set(slog.LevelDebug)
-	}
-
-	logger.DebugContext(ctx, "cli arguments", slog.String("config", configPath), slog.String("template", template), slog.String("template-custom", templateCustom))
-
-	cnf, err := pkgen.ParseConfig(ctx, configPath)
+	// config
+	cnf, err := pkgen.NewConfig(ctx)
 	if err != nil {
 		logger.ErrorContext(ctx, "error while parsing config", errAttr(err))
 		os.Exit(1)
 	}
 
-	// cli arguments overwrite config's one
-	if template != "" {
-		cnf.Templates = []templates.TemplateConfig{{Name: template}}
-	}
-	if templateCustom != "" {
-		cnf.Templates = append(cnf.Templates, templates.TemplateConfig{CustomTemplateFile: templateCustom})
+	p := PKGen{
+		pk: pkgen.Packages{},
+		tm: pkgen.Templates{},
+		gn: pkgen.Generator{
+			FileWriter: nil,
+		},
 	}
 
-	logger.DebugContext(ctx, "config", slog.Any("config", cnf))
-
-	packages, err := pkgen.Packages(ctx, cnf.PackagesQuery)
-	if err != nil {
-		logger.ErrorContext(ctx, "error while querying packages", errAttr(err))
+	if err := p.Run(ctx, cnf); err != nil {
 		os.Exit(1)
 	}
-	debugLogPackages(ctx, packages)
-
-	tmps, err := templates.GetTemplates(cnf.Templates)
-	if err != nil {
-		logger.ErrorContext(ctx, "error while getting templates", errAttr(err))
-		os.Exit(1)
-	}
-
-	err = pkgen.Generate(ctx, logger, packages, tmps, cnf.Generate)
-	if err != nil {
-		os.Exit(1)
-	}
-}
-
-func debugLogPackages(ctx context.Context, packages []*packages.Package) {
-	logger := slog.Default()
-	if !logger.Enabled(ctx, slog.LevelDebug) {
-		return
-	}
-
-	for _, p := range packages {
-		logger.DebugContext(ctx, "queried package", slog.String("package", fmt.Sprintf("%#v", p)))
-	}
-}
-
-func errAttr(err error) slog.Attr {
-	return slog.String("err", err.Error())
 }
