@@ -1,0 +1,6 @@
+templates:
+  - otel
+packages_query:
+  patterns:
+    - './internal/app'
+    - './internal/domain/...'

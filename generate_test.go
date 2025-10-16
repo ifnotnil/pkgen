@@ -6,6 +6,7 @@ import (
 	"testing"
 	"text/template"
 
+	"github.com/ifnotnil/x/tst"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/tools/go/packages"
 )
@@ -22,19 +23,55 @@ package abc
 const PackagePath = "def"
 `
 
+func TestGenerateInPackage(t *testing.T) {
+	t.Run("write actual file", func(t *testing.T) {
+		tmpDir := t.TempDir()
+		t.Chdir(tmpDir)
+
+		pkg := packages.Package{Name: "abc", PkgPath: "def", GoFiles: []string{filepath.Join(tmpDir, "random.go")}}
+		tmp, err := template.New("abc").Parse(templateStr)
+		require.NoError(t, err)
+		cnf := DefaultConfig.Generate
+
+		err = Generator{}.GenerateInPackage(t.Context(), pkg, tmp, cnf)
+		require.NoError(t, err)
+
+		// read and evaluate the generated file
+		got, gotErr := os.ReadFile(filepath.Join(filepath.Clean(tmpDir), "zz_generated.abc.go"))
+		require.NoError(t, gotErr)
+		require.Equal(t, expectedGenerated, string(got))
+	})
+}
+
 func TestGenerate(t *testing.T) {
-	tmpDir := t.TempDir()
-	t.Chdir(tmpDir)
+	tests := map[string]struct {
+		packages      []packages.Package
+		templates     []*template.Template
+		config        GenerateConfig
+		mockInit      func(*MockFileWriter)
+		errorAsserter tst.ErrorAssertionFunc
+	}{
+		"nil": {
+			packages:      nil,
+			templates:     nil,
+			config:        GenerateConfig{},
+			mockInit:      func(*MockFileWriter) {},
+			errorAsserter: tst.NoError(),
+		},
+	}
 
-	pkg := &packages.Package{Name: "abc", PkgPath: "def", GoFiles: []string{filepath.Join(tmpDir, "random.go")}}
-	tmp, err := template.New("abc").Parse(templateStr)
-	require.NoError(t, err)
-	cnf := GenerateConfig{}
-	err = GenerateInPackage(t.Context(), pkg, tmp, cnf)
-	require.NoError(t, err)
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			mockFW := NewMockFileWriter(t)
+			if tc.mockInit != nil {
+				tc.mockInit(mockFW)
+			}
 
-	// read and evaluate the generated file
-	got, gotErr := os.ReadFile(filepath.Join(filepath.Clean(tmpDir), "zz_generated.abc.go"))
-	require.NoError(t, gotErr)
-	require.Equal(t, expectedGenerated, string(got))
+			log := logger(t)
+			gen := Generator{FileWriter: mockFW}
+
+			err := gen.Generate(t.Context(), log, tc.packages, tc.templates, tc.config)
+			tc.errorAsserter(t, err)
+		})
+	}
 }

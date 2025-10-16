@@ -34,7 +34,7 @@ pkgen --template '<template>'
 Or with a custom template
 
 ```shell
-pkgen --template-custom /path/to/template.tmpl
+pkgen --template-file /path/to/template.tmpl
 ```
 
 ## Templates

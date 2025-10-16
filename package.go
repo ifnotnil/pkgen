@@ -4,23 +4,13 @@ import (
 	"context"
 	"os"
 
+	"github.com/samber/lo"
 	"golang.org/x/tools/go/packages"
 )
 
-type PackagesQueryConfig struct {
-	IncludeTests bool     `yaml:"include_tests"`
-	Env          []string `yaml:"env"`
-	BuildFlags   []string `yaml:"build_flags"`
+type Packages struct{}
 
-	Dir      string   `yaml:"dir"`
-	Patterns []string `yaml:"patterns"` // e.g. "./..."
-}
-
-func Packages(ctx context.Context, q PackagesQueryConfig) ([]*packages.Package, error) {
-	if len(q.Patterns) == 0 {
-		q.Patterns = []string{"./..."}
-	}
-
+func (Packages) Query(ctx context.Context, q PackagesQueryConfig) ([]packages.Package, error) {
 	cfg := &packages.Config{
 		Mode:       packages.NeedName | packages.NeedModule | packages.NeedFiles,
 		Context:    ctx,
@@ -30,5 +20,15 @@ func Packages(ctx context.Context, q PackagesQueryConfig) ([]*packages.Package, 
 		BuildFlags: q.BuildFlags,
 	}
 
-	return packages.Load(cfg, q.Patterns...)
+	p, err := packages.Load(cfg, q.Patterns...)
+	if err != nil {
+		return nil, err
+	}
+
+	return lo.FilterMap(p, func(item *packages.Package, index int) (packages.Package, bool) {
+		if item == nil {
+			return packages.Package{}, false
+		}
+		return *item, true
+	}), nil
 }
