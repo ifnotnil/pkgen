@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/ifnotnil/x/tst"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -12,7 +13,7 @@ func TestPackagesQuery(t *testing.T) {
 	tests := map[string]struct {
 		config              PackagesQueryConfig
 		expectedPackageName string
-		expectError         bool
+		errorAsserter       tst.ErrorAssertionFunc
 	}{
 		"query current package": {
 			config: PackagesQueryConfig{
@@ -20,7 +21,7 @@ func TestPackagesQuery(t *testing.T) {
 				Patterns:     []string{"."},
 			},
 			expectedPackageName: "pkgen",
-			expectError:         false,
+			errorAsserter:       tst.NoError(),
 		},
 		"query with tests": {
 			config: PackagesQueryConfig{
@@ -28,13 +29,14 @@ func TestPackagesQuery(t *testing.T) {
 				Patterns:     []string{"."},
 			},
 			expectedPackageName: "pkgen",
-			expectError:         false,
+			errorAsserter:       tst.NoError(),
 		},
 		"invalid pattern": {
 			config: PackagesQueryConfig{
 				Patterns: []string{"./nonexistent/package/that/does/not/exist"},
 			},
-			expectError: false, // packages.Load doesn't error on non-existent patterns, just returns empty
+			expectedPackageName: "",
+			errorAsserter:       tst.NoError(),
 		},
 	}
 
@@ -43,10 +45,7 @@ func TestPackagesQuery(t *testing.T) {
 			p := Packages{}
 			pkgs, err := p.Query(context.Background(), tc.config)
 
-			if tc.expectError {
-				require.Error(t, err)
-				return
-			}
+			tc.errorAsserter(t, err)
 
 			require.NoError(t, err)
 
