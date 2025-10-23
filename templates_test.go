@@ -1,6 +1,7 @@
 package pkgen
 
 import (
+	"os"
 	"strings"
 	"testing"
 
@@ -34,3 +35,132 @@ package abc123
 
 const packagePath = "github.com/abc/a1/abc123"
 `
+
+func TestTemplates_GetAll(t *testing.T) {
+	t.Run("empty configs returns empty slice", func(t *testing.T) {
+		templates, err := Templates{}.GetAll(TemplateConfigs{})
+		require.NoError(t, err)
+		require.NotNil(t, templates)
+		require.Len(t, templates, 0)
+	})
+
+	t.Run("nil configs returns empty slice", func(t *testing.T) {
+		templates, err := Templates{}.GetAll(nil)
+		require.NoError(t, err)
+		require.NotNil(t, templates)
+		require.Len(t, templates, 0)
+	})
+
+	t.Run("single template by name", func(t *testing.T) {
+		configs := TemplateConfigs{
+			{Name: "pkgpath"},
+		}
+		templates, err := Templates{}.GetAll(configs)
+		require.NoError(t, err)
+		require.Len(t, templates, 1)
+		require.NotNil(t, templates[0])
+		require.Equal(t, "pkgpath", templates[0].Name())
+	})
+
+	t.Run("multiple templates by name", func(t *testing.T) {
+		configs := TemplateConfigs{
+			{Name: "pkgpath"},
+			{Name: "otel"},
+			{Name: "oteltrace"},
+		}
+		templates, err := Templates{}.GetAll(configs)
+		require.NoError(t, err)
+		require.Len(t, templates, 3)
+		require.Equal(t, "pkgpath", templates[0].Name())
+		require.Equal(t, "otel", templates[1].Name())
+		require.Equal(t, "oteltrace", templates[2].Name())
+	})
+
+	t.Run("template not found by name", func(t *testing.T) {
+		configs := TemplateConfigs{
+			{Name: "nonexistent"},
+		}
+		templates, err := Templates{}.GetAll(configs)
+		require.Error(t, err)
+		require.ErrorIs(t, err, ErrTemplateNotFound)
+		require.Nil(t, templates)
+	})
+
+	t.Run("error on first template stops processing", func(t *testing.T) {
+		configs := TemplateConfigs{
+			{Name: "nonexistent"},
+			{Name: "pkgpath"},
+		}
+		templates, err := Templates{}.GetAll(configs)
+		require.Error(t, err)
+		require.ErrorIs(t, err, ErrTemplateNotFound)
+		require.Nil(t, templates)
+	})
+
+	t.Run("error on second template stops processing", func(t *testing.T) {
+		configs := TemplateConfigs{
+			{Name: "pkgpath"},
+			{Name: "nonexistent"},
+		}
+		templates, err := Templates{}.GetAll(configs)
+		require.Error(t, err)
+		require.ErrorIs(t, err, ErrTemplateNotFound)
+		require.Nil(t, templates)
+	})
+
+	t.Run("custom template file", func(t *testing.T) {
+		// Create a temporary custom template file
+		tmpFile := t.TempDir() + "/custom.tmpl"
+		err := os.WriteFile(tmpFile, []byte("custom template content"), 0644)
+		require.NoError(t, err)
+
+		configs := TemplateConfigs{
+			{CustomTemplateFile: tmpFile},
+		}
+		templates, err := Templates{}.GetAll(configs)
+		require.NoError(t, err)
+		require.Len(t, templates, 1)
+		require.Equal(t, "custom", templates[0].Name())
+	})
+
+	t.Run("custom template file not found", func(t *testing.T) {
+		configs := TemplateConfigs{
+			{CustomTemplateFile: "/nonexistent/file.tmpl"},
+		}
+		templates, err := Templates{}.GetAll(configs)
+		require.Error(t, err)
+		require.ErrorIs(t, err, ErrTemplateNotFound)
+		require.Nil(t, templates)
+	})
+
+	t.Run("mixed named and custom templates", func(t *testing.T) {
+		tmpFile := t.TempDir() + "/custom.tmpl"
+		err := os.WriteFile(tmpFile, []byte("custom template"), 0644)
+		require.NoError(t, err)
+
+		configs := TemplateConfigs{
+			{Name: "pkgpath"},
+			{CustomTemplateFile: tmpFile},
+			{Name: "otel"},
+		}
+		templates, err := Templates{}.GetAll(configs)
+		require.NoError(t, err)
+		require.Len(t, templates, 3)
+		require.Equal(t, "pkgpath", templates[0].Name())
+		require.Equal(t, "custom", templates[1].Name())
+		require.Equal(t, "otel", templates[2].Name())
+	})
+
+	t.Run("empty config entry is skipped", func(t *testing.T) {
+		configs := TemplateConfigs{
+			{Name: "pkgpath"},
+			{}, // empty config - both Name and CustomTemplateFile are empty
+			{Name: "otel"},
+		}
+		templates, err := Templates{}.GetAll(configs)
+		require.NoError(t, err)
+		require.Len(t, templates, 2)
+		require.Equal(t, "pkgpath", templates[0].Name())
+		require.Equal(t, "otel", templates[1].Name())
+	})
+}
