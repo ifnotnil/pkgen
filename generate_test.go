@@ -58,6 +58,117 @@ func TestGenerate(t *testing.T) {
 			mockInit:      func(*MockFileWriter) {},
 			errorAsserter: tst.NoError(),
 		},
+		"single package with single template": {
+			packages: []packages.Package{
+				{
+					Name:    "testpkg",
+					PkgPath: "example.com/testpkg",
+					Dir:     "/tmp/testpkg",
+					GoFiles: []string{"/tmp/testpkg/file.go"},
+				},
+			},
+			templates: []*template.Template{
+				template.Must(template.New("test").Parse("package {{ .Name }}\nconst Path = \"{{ .PkgPath }}\"\n")),
+			},
+			config: GenerateConfig{
+				OutputFile:    "zz_generated.{{ .TemplateName }}.go",
+				OutputFileMod: 0o644,
+			},
+			mockInit: func(m *MockFileWriter) {
+				m.EXPECT().WriteFile("/tmp/testpkg/zz_generated.test.go", []byte("package testpkg\nconst Path = \"example.com/testpkg\"\n"), os.FileMode(0o644)).Return(nil)
+			},
+			errorAsserter: tst.NoError(),
+		},
+		"multiple packages with multiple templates": {
+			packages: []packages.Package{
+				{
+					Name:    "pkg1",
+					PkgPath: "example.com/pkg1",
+					Dir:     "/tmp/pkg1",
+					GoFiles: []string{"/tmp/pkg1/file.go"},
+				},
+				{
+					Name:    "pkg2",
+					PkgPath: "example.com/pkg2",
+					Dir:     "/tmp/pkg2",
+					GoFiles: []string{"/tmp/pkg2/file.go"},
+				},
+			},
+			templates: []*template.Template{
+				template.Must(template.New("tmpl1").Parse("package {{ .Name }}\n")),
+				template.Must(template.New("tmpl2").Parse("// {{ .PkgPath }}\n")),
+			},
+			config: GenerateConfig{
+				OutputFile:    "zz.{{ .TemplateName }}.go",
+				OutputFileMod: 0o644,
+			},
+			mockInit: func(m *MockFileWriter) {
+				m.EXPECT().WriteFile("/tmp/pkg1/zz.tmpl1.go", []byte("package pkg1\n"), os.FileMode(0o644)).Return(nil)
+				m.EXPECT().WriteFile("/tmp/pkg1/zz.tmpl2.go", []byte("// example.com/pkg1\n"), os.FileMode(0o644)).Return(nil)
+				m.EXPECT().WriteFile("/tmp/pkg2/zz.tmpl1.go", []byte("package pkg2\n"), os.FileMode(0o644)).Return(nil)
+				m.EXPECT().WriteFile("/tmp/pkg2/zz.tmpl2.go", []byte("// example.com/pkg2\n"), os.FileMode(0o644)).Return(nil)
+			},
+			errorAsserter: tst.NoError(),
+		},
+		"package with no Go files": {
+			packages: []packages.Package{
+				{
+					Name:    "emptypkg",
+					PkgPath: "example.com/emptypkg",
+					Dir:     "/tmp/emptypkg",
+					GoFiles: []string{},
+				},
+			},
+			templates: []*template.Template{
+				template.Must(template.New("test").Parse("package {{ .Name }}\n")),
+			},
+			config: GenerateConfig{
+				OutputFile:    "zz_generated.{{ .TemplateName }}.go",
+				OutputFileMod: 0o644,
+			},
+			mockInit:      func(m *MockFileWriter) {},
+			errorAsserter: tst.NoError(),
+		},
+		"template execution error": {
+			packages: []packages.Package{
+				{
+					Name:    "testpkg",
+					PkgPath: "example.com/testpkg",
+					Dir:     "/tmp/testpkg",
+					GoFiles: []string{"/tmp/testpkg/file.go"},
+				},
+			},
+			templates: []*template.Template{
+				template.Must(template.New("bad").Parse("{{ .NonExistentField }}")),
+			},
+			config: GenerateConfig{
+				OutputFile:    "zz_generated.{{ .TemplateName }}.go",
+				OutputFileMod: 0o644,
+			},
+			mockInit:      func(m *MockFileWriter) {},
+			errorAsserter: tst.Error(),
+		},
+		"file write error": {
+			packages: []packages.Package{
+				{
+					Name:    "testpkg",
+					PkgPath: "example.com/testpkg",
+					Dir:     "/tmp/testpkg",
+					GoFiles: []string{"/tmp/testpkg/file.go"},
+				},
+			},
+			templates: []*template.Template{
+				template.Must(template.New("test").Parse("package {{ .Name }}\n")),
+			},
+			config: GenerateConfig{
+				OutputFile:    "zz_generated.{{ .TemplateName }}.go",
+				OutputFileMod: 0o644,
+			},
+			mockInit: func(m *MockFileWriter) {
+				m.EXPECT().WriteFile("/tmp/testpkg/zz_generated.test.go", []byte("package testpkg\n"), os.FileMode(0o644)).Return(os.ErrPermission)
+			},
+			errorAsserter: tst.ErrorIs(os.ErrPermission),
+		},
 	}
 
 	for name, tc := range tests {
