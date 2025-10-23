@@ -15,8 +15,7 @@ import (
 func NewMockFileWriter(t interface {
 	mock.TestingT
 	Cleanup(func())
-},
-) *MockFileWriter {
+}) *MockFileWriter {
 	mock := &MockFileWriter{}
 	mock.Mock.Test(t)
 

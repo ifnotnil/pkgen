@@ -19,8 +19,7 @@ import (
 func NewMockTemplates(t interface {
 	mock.TestingT
 	Cleanup(func())
-},
-) *MockTemplates {
+}) *MockTemplates {
 	mock := &MockTemplates{}
 	mock.Mock.Test(t)
 
@@ -171,8 +170,7 @@ func (_c *MockTemplates_GetAll_Call) RunAndReturn(run func(c pkgen.TemplateConfi
 func NewMockPackages(t interface {
 	mock.TestingT
 	Cleanup(func())
-},
-) *MockPackages {
+}) *MockPackages {
 	mock := &MockPackages{}
 	mock.Mock.Test(t)
 
@@ -195,23 +193,23 @@ func (_m *MockPackages) EXPECT() *MockPackages_Expecter {
 }
 
 // Query provides a mock function for the type MockPackages
-func (_mock *MockPackages) Query(ctx context.Context, q pkgen.PackagesQueryConfig) ([]*packages.Package, error) {
+func (_mock *MockPackages) Query(ctx context.Context, q pkgen.PackagesQueryConfig) ([]packages.Package, error) {
 	ret := _mock.Called(ctx, q)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Query")
 	}
 
-	var r0 []*packages.Package
+	var r0 []packages.Package
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, pkgen.PackagesQueryConfig) ([]*packages.Package, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, pkgen.PackagesQueryConfig) ([]packages.Package, error)); ok {
 		return returnFunc(ctx, q)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, pkgen.PackagesQueryConfig) []*packages.Package); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, pkgen.PackagesQueryConfig) []packages.Package); ok {
 		r0 = returnFunc(ctx, q)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*packages.Package)
+			r0 = ret.Get(0).([]packages.Package)
 		}
 	}
 	if returnFunc, ok := ret.Get(1).(func(context.Context, pkgen.PackagesQueryConfig) error); ok {
@@ -252,12 +250,12 @@ func (_c *MockPackages_Query_Call) Run(run func(ctx context.Context, q pkgen.Pac
 	return _c
 }
 
-func (_c *MockPackages_Query_Call) Return(packages1 []*packages.Package, err error) *MockPackages_Query_Call {
+func (_c *MockPackages_Query_Call) Return(packages1 []packages.Package, err error) *MockPackages_Query_Call {
 	_c.Call.Return(packages1, err)
 	return _c
 }
 
-func (_c *MockPackages_Query_Call) RunAndReturn(run func(ctx context.Context, q pkgen.PackagesQueryConfig) ([]*packages.Package, error)) *MockPackages_Query_Call {
+func (_c *MockPackages_Query_Call) RunAndReturn(run func(ctx context.Context, q pkgen.PackagesQueryConfig) ([]packages.Package, error)) *MockPackages_Query_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -267,8 +265,7 @@ func (_c *MockPackages_Query_Call) RunAndReturn(run func(ctx context.Context, q 
 func NewMockGenerator(t interface {
 	mock.TestingT
 	Cleanup(func())
-},
-) *MockGenerator {
+}) *MockGenerator {
 	mock := &MockGenerator{}
 	mock.Mock.Test(t)
 

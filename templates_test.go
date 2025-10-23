@@ -41,19 +41,22 @@ func TestTemplates_GetAll(t *testing.T) {
 		templates, err := Templates{}.GetAll(TemplateConfigs{})
 		require.NoError(t, err)
 		require.NotNil(t, templates)
-		require.Len(t, templates, 0)
+		require.Empty(t, templates)
 	})
 
 	t.Run("nil configs returns empty slice", func(t *testing.T) {
 		templates, err := Templates{}.GetAll(nil)
 		require.NoError(t, err)
 		require.NotNil(t, templates)
-		require.Len(t, templates, 0)
+		require.Empty(t, templates)
 	})
 
 	t.Run("single template by name", func(t *testing.T) {
 		configs := TemplateConfigs{
-			{Name: "pkgpath"},
+			{
+				Name:               "pkgpath",
+				CustomTemplateFile: "",
+			},
 		}
 		templates, err := Templates{}.GetAll(configs)
 		require.NoError(t, err)
@@ -64,9 +67,9 @@ func TestTemplates_GetAll(t *testing.T) {
 
 	t.Run("multiple templates by name", func(t *testing.T) {
 		configs := TemplateConfigs{
-			{Name: "pkgpath"},
-			{Name: "otel"},
-			{Name: "oteltrace"},
+			{Name: "pkgpath", CustomTemplateFile: ""},
+			{Name: "otel", CustomTemplateFile: ""},
+			{Name: "oteltrace", CustomTemplateFile: ""},
 		}
 		templates, err := Templates{}.GetAll(configs)
 		require.NoError(t, err)
@@ -78,7 +81,7 @@ func TestTemplates_GetAll(t *testing.T) {
 
 	t.Run("template not found by name", func(t *testing.T) {
 		configs := TemplateConfigs{
-			{Name: "nonexistent"},
+			{Name: "nonexistent", CustomTemplateFile: ""},
 		}
 		templates, err := Templates{}.GetAll(configs)
 		require.Error(t, err)
@@ -88,8 +91,8 @@ func TestTemplates_GetAll(t *testing.T) {
 
 	t.Run("error on first template stops processing", func(t *testing.T) {
 		configs := TemplateConfigs{
-			{Name: "nonexistent"},
-			{Name: "pkgpath"},
+			{Name: "nonexistent", CustomTemplateFile: ""},
+			{Name: "pkgpath", CustomTemplateFile: ""},
 		}
 		templates, err := Templates{}.GetAll(configs)
 		require.Error(t, err)
@@ -99,8 +102,8 @@ func TestTemplates_GetAll(t *testing.T) {
 
 	t.Run("error on second template stops processing", func(t *testing.T) {
 		configs := TemplateConfigs{
-			{Name: "pkgpath"},
-			{Name: "nonexistent"},
+			{Name: "pkgpath", CustomTemplateFile: ""},
+			{Name: "nonexistent", CustomTemplateFile: ""},
 		}
 		templates, err := Templates{}.GetAll(configs)
 		require.Error(t, err)
@@ -111,11 +114,11 @@ func TestTemplates_GetAll(t *testing.T) {
 	t.Run("custom template file", func(t *testing.T) {
 		// Create a temporary custom template file
 		tmpFile := t.TempDir() + "/custom.tmpl"
-		err := os.WriteFile(tmpFile, []byte("custom template content"), 0644)
+		err := os.WriteFile(tmpFile, []byte("custom template content"), 0o644) //nolint:gosec
 		require.NoError(t, err)
 
 		configs := TemplateConfigs{
-			{CustomTemplateFile: tmpFile},
+			{Name: "", CustomTemplateFile: tmpFile},
 		}
 		templates, err := Templates{}.GetAll(configs)
 		require.NoError(t, err)
@@ -125,7 +128,7 @@ func TestTemplates_GetAll(t *testing.T) {
 
 	t.Run("custom template file not found", func(t *testing.T) {
 		configs := TemplateConfigs{
-			{CustomTemplateFile: "/nonexistent/file.tmpl"},
+			{Name: "", CustomTemplateFile: "/nonexistent/file.tmpl"},
 		}
 		templates, err := Templates{}.GetAll(configs)
 		require.Error(t, err)
@@ -135,13 +138,13 @@ func TestTemplates_GetAll(t *testing.T) {
 
 	t.Run("mixed named and custom templates", func(t *testing.T) {
 		tmpFile := t.TempDir() + "/custom.tmpl"
-		err := os.WriteFile(tmpFile, []byte("custom template"), 0644)
+		err := os.WriteFile(tmpFile, []byte("custom template"), 0o644) //nolint:gosec
 		require.NoError(t, err)
 
 		configs := TemplateConfigs{
-			{Name: "pkgpath"},
-			{CustomTemplateFile: tmpFile},
-			{Name: "otel"},
+			{Name: "pkgpath", CustomTemplateFile: ""},
+			{Name: "", CustomTemplateFile: tmpFile},
+			{Name: "otel", CustomTemplateFile: ""},
 		}
 		templates, err := Templates{}.GetAll(configs)
 		require.NoError(t, err)
@@ -153,9 +156,9 @@ func TestTemplates_GetAll(t *testing.T) {
 
 	t.Run("empty config entry is skipped", func(t *testing.T) {
 		configs := TemplateConfigs{
-			{Name: "pkgpath"},
-			{}, // empty config - both Name and CustomTemplateFile are empty
-			{Name: "otel"},
+			{Name: "pkgpath", CustomTemplateFile: ""},
+			{Name: "", CustomTemplateFile: ""}, // empty config - both Name and CustomTemplateFile are empty
+			{Name: "otel", CustomTemplateFile: ""},
 		}
 		templates, err := Templates{}.GetAll(configs)
 		require.NoError(t, err)

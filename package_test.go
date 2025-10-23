@@ -18,6 +18,9 @@ func TestPackagesQuery(t *testing.T) {
 		"query current package": {
 			config: PackagesQueryConfig{
 				IncludeTests: false,
+				Env:          nil,
+				BuildFlags:   nil,
+				Dir:          "",
 				Patterns:     []string{"."},
 			},
 			expectedPackageName: "pkgen",
@@ -26,6 +29,9 @@ func TestPackagesQuery(t *testing.T) {
 		"query with tests": {
 			config: PackagesQueryConfig{
 				IncludeTests: true,
+				Env:          nil,
+				BuildFlags:   nil,
+				Dir:          "",
 				Patterns:     []string{"."},
 			},
 			expectedPackageName: "pkgen",
@@ -33,7 +39,11 @@ func TestPackagesQuery(t *testing.T) {
 		},
 		"invalid pattern": {
 			config: PackagesQueryConfig{
-				Patterns: []string{"./nonexistent/package/that/does/not/exist"},
+				IncludeTests: false,
+				Env:          nil,
+				BuildFlags:   nil,
+				Dir:          "",
+				Patterns:     []string{"./nonexistent/package/that/does/not/exist"},
 			},
 			expectedPackageName: "",
 			errorAsserter:       tst.NoError(),
