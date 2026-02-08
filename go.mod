@@ -4,7 +4,7 @@ go 1.24.0
 
 require (
 	github.com/ifnotnil/x/tst v0.0.2
-	github.com/lmittmann/tint v1.1.2
+	github.com/lmittmann/tint v1.1.3
 	github.com/samber/lo v1.52.0
 	github.com/stretchr/testify v1.11.1
 	go.yaml.in/yaml/v4 v4.0.0-rc.3
