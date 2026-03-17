@@ -12,7 +12,7 @@ import (
 )
 
 func slogHandler(loggerLevel *slog.LevelVar) slog.Handler {
-	if term.IsTerminal(int(os.Stdout.Fd())) {
+	if term.IsTerminal(int(os.Stdout.Fd())) { //nolint:gosec // G115: os.Stdout.Fd() is a valid file descriptor, overflow is not a concern here
 		return tint.NewHandler(os.Stdout, &tint.Options{
 			AddSource:   false,
 			Level:       loggerLevel,

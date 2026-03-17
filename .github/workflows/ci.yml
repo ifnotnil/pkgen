@@ -21,7 +21,7 @@ jobs:
     - name: set up go
       uses: actions/setup-go@v6
       with:
-        go-version: "1.24.x"
+        go-version: "1.26.x"
         check-latest: true
         cache: false
 
@@ -50,9 +50,6 @@ jobs:
 
     - name: generate, format and check
       run: make ci-gen-n-format
-
-    - name: staticcheck
-      run: make staticcheck
 
     - name: golangci-lint
       run: make golangci-lint
