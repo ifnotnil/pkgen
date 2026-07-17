@@ -63,7 +63,7 @@ type MockFileWriter_WriteFile_Call struct {
 //   - name string
 //   - data []byte
 //   - perm os.FileMode
-func (_e *MockFileWriter_Expecter) WriteFile(name interface{}, data interface{}, perm interface{}) *MockFileWriter_WriteFile_Call {
+func (_e *MockFileWriter_Expecter) WriteFile(name any, data any, perm any) *MockFileWriter_WriteFile_Call {
 	return &MockFileWriter_WriteFile_Call{Call: _e.mock.On("WriteFile", name, data, perm)}
 }
 
