@@ -21,6 +21,7 @@ linters:
   default: all
 
   disable:
+    - gomodguard # deprecated
     - cyclop
     - depguard
     - dupl
@@ -49,6 +50,7 @@ linters:
     - wsl_v5
     - forbidigo
     - noinlineerr
+    - goconst
 
   settings:
     staticcheck:

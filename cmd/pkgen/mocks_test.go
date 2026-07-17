@@ -76,7 +76,7 @@ type MockTemplates_Get_Call struct {
 
 // Get is a helper method to define mock.On call
 //   - name string
-func (_e *MockTemplates_Expecter) Get(name interface{}) *MockTemplates_Get_Call {
+func (_e *MockTemplates_Expecter) Get(name any) *MockTemplates_Get_Call {
 	return &MockTemplates_Get_Call{Call: _e.mock.On("Get", name)}
 }
 
@@ -138,7 +138,7 @@ type MockTemplates_GetAll_Call struct {
 
 // GetAll is a helper method to define mock.On call
 //   - c pkgen.TemplateConfigs
-func (_e *MockTemplates_Expecter) GetAll(c interface{}) *MockTemplates_GetAll_Call {
+func (_e *MockTemplates_Expecter) GetAll(c any) *MockTemplates_GetAll_Call {
 	return &MockTemplates_GetAll_Call{Call: _e.mock.On("GetAll", c)}
 }
 
@@ -228,7 +228,7 @@ type MockPackages_Query_Call struct {
 // Query is a helper method to define mock.On call
 //   - ctx context.Context
 //   - q pkgen.PackagesQueryConfig
-func (_e *MockPackages_Expecter) Query(ctx interface{}, q interface{}) *MockPackages_Query_Call {
+func (_e *MockPackages_Expecter) Query(ctx any, q any) *MockPackages_Query_Call {
 	return &MockPackages_Query_Call{Call: _e.mock.On("Query", ctx, q)}
 }
 
@@ -315,7 +315,7 @@ type MockGenerator_Generate_Call struct {
 //   - pkgs []packages.Package
 //   - tmps []*template.Template
 //   - cnf pkgen.GenerateConfig
-func (_e *MockGenerator_Expecter) Generate(ctx interface{}, logger interface{}, pkgs interface{}, tmps interface{}, cnf interface{}) *MockGenerator_Generate_Call {
+func (_e *MockGenerator_Expecter) Generate(ctx any, logger any, pkgs any, tmps any, cnf any) *MockGenerator_Generate_Call {
 	return &MockGenerator_Generate_Call{Call: _e.mock.On("Generate", ctx, logger, pkgs, tmps, cnf)}
 }
 
